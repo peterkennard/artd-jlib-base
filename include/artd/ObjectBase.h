@@ -102,16 +102,6 @@ private:
 //		return(*this);
 //	}
 
-#if 0
-	ObjectPtr<ObjT> makeFromPointer(ObjT *obj) {
-		if (obj) {
-			if (std::is_base_of<ObjectBase, ObjT>::value) {
-				return(ObjectBase::makeShared((ObjectBase *)obj));
-			}
-		}
-		return(ObjectPtr<ObjT>());
-	}
-#endif
 public:
 
 	INL HackStdShared<ObjT>& _stdHack_() {
@@ -209,10 +199,39 @@ public:
 	}
 };
 
-
 class RcString;
 class RcWString;
 class ArtdClass;
+
+extern thread_local ObjAllocatorArg* _allocatorArg_;
+
+class ARTD_API_JLIB_BASE ObjAllocatorArg {
+    ObjAllocatorArg *prior_;
+public:
+	size_t extraSize;
+	size_t allocatedSize = 0;
+	void* allocatedAt = nullptr;
+
+    
+	INL ObjAllocatorArg(size_t extraSize = 0)
+		: extraSize(extraSize)
+	{
+        prior_ = _allocatorArg_;
+		// TODO: check is this item is on the stack or not.
+		_allocatorArg_ = this;
+	}
+
+	INL static ObjAllocatorArg* getArg() {
+		return(_allocatorArg_);
+	}
+
+	INL ~ObjAllocatorArg() {
+        _allocatorArg_ = prior_;
+	}
+
+	static void* heapAllocate(size_t size);
+	static void heapDeallocate(void* ptr);
+};
 
 class ARTD_API_JLIB_BASE ObjectBase
 {
@@ -343,7 +362,9 @@ public:
 	static ObjectPtr<ObjT> make(_Types&&... args) {
 
 		if (std::is_base_of<ObjectBase, ObjT>::value) {
-			ObjT* obj = new ObjT(std::forward<_Types>(args)...);
+            ObjAllocatorArg aaa;
+			void *objmem = ::operator new(sizeof(ObjT));
+			ObjT* obj =  new(objmem) ObjT(std::forward<_Types>(args)...);
 			ObjectPtr<ObjT> retval 
 				= makeFromBase<ObjT>(obj,
 						std::bool_constant<has_myObjectBase<ObjT>::value>());
@@ -399,35 +420,6 @@ public:
 		return(super::lock());
 	}
 };
-
-
-extern thread_local ObjAllocatorArg* _allocatorArg_;
-
-class ARTD_API_JLIB_BASE ObjAllocatorArg {
-public:
-	size_t extraSize;
-	size_t allocatedSize = 0;
-	void* allocatedAt = nullptr;
-
-	INL ObjAllocatorArg(size_t extraSize)
-		: extraSize(extraSize)
-	{
-		// TODO: check is this item is on the stack or not.
-		_allocatorArg_ = this;
-	}
-
-	INL static ObjAllocatorArg* getArg() {
-		return(_allocatorArg_);
-	}
-
-	INL ~ObjAllocatorArg() {
-		_allocatorArg_ = nullptr;
-	}
-	
-	static void* heapAllocate(size_t size);
-	static void heapDeallocate(void* ptr);
-};
-
 
 template<typename T>
 class ObjectAllocator
