@@ -29,6 +29,10 @@
 #include "artd/static_assert.h"
 
 // #include "artd/platform_specific.h"
+#ifdef ARTD_WINDOWS
+	#include "Windows.h"
+#endif
+
 
 ARTD_BEGIN
 

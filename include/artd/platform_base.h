@@ -44,6 +44,7 @@
 		#define ARTD_ALWAYS_INLINE inline
 	#endif
 #elif defined(_MSC_VER)
+	#define ARTD_WINDOWS
 	#define ARTD_ALWAYS_INLINE __forceinline
 #else
 	#define ARTD_ALWAYS_INLINE inline
