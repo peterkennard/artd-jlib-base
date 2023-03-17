@@ -345,7 +345,7 @@ public:
 	static ObjectPtr<ObjT> make(_Types&&... args) {
 
 		// std::has_virtual_destructor<T>
-
+		  
 		if (std::is_base_of<ObjectBase, ObjT>::value) {
 			ObjAllocatorArg aaa;
 			void* objmem = ::operator new(sizeof(ObjT));
