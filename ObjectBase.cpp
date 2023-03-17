@@ -108,11 +108,6 @@ size_t ObjectBase::getAllocatedCount(bool final) {
 
 thread_local ObjAllocatorArg* _allocatorArg_ = nullptr;
 
-ObjectBase::ObjectBase(CBlock *cblock) 
-    : cbPtr(cblock)
-{
-}
-
 ObjectBase::~ObjectBase() {
     remainingObjs.erase(this);
     cbPtr = nullptr;
@@ -238,58 +233,18 @@ void ObjectBase::release() {
     }
 }
 
-
-ObjectPtr<ObjectBase> ObjectBase::makeHandle (ObjectBase *forThis) {
-
-    if (trackOutstanding) {
-        remainingObjs[forThis] = forThis->getCppObjectID();
-    }
+ObjectPtr<ObjectBase> ObjectBase::makeHandle(ObjectBase* forThis) {
+    
     ++allocCount;
-
-    ObjAllocatorArg allocArg(0);
+    ObjAllocatorArg& allocArg = *_allocatorArg_;
     std::shared_ptr<ObjectBaseHolder> sptr = std::allocate_shared<ObjectBaseHolder>(PooledCBlockAllocator<ObjectBaseHolder>(), forThis);
-    forThis->cbPtr = allocArg.allocatedAt;
     ((void**)&sptr)[0] = (void*)forThis; // replace object with base object
     return(ObjectPtr<ObjectBase>(*reinterpret_cast<std::shared_ptr<ObjectBase>*>((void*)&sptr)));
 }
 
-#if 0
-ObjectPtr<ObjectBase> ObjectBase::makeShared(ObjectBase* forThis) {
-    if (forThis->cbPtr == NOT_SHARED()) {
-        ObjAllocatorArg allocArg(0);
-        std::shared_ptr<ObjectBaseHolder> sptr = std::allocate_shared<ObjectBaseHolder>(PooledCBlockAllocator<ObjectBaseHolder>(), forThis);
-        forThis->cbPtr = allocArg.allocatedAt;
-        ((void**)&sptr)[0] = (void*)forThis; // replace object with base object
-        return(ObjectPtr<ObjectBase>(*reinterpret_cast<std::shared_ptr<ObjectBase>*>((void*)&sptr)));
-    }
-    HackStdShared<ObjectBase> sbuf(forThis, forThis->cbPtr);
-    ObjectPtr<ObjectBase>& current = sbuf.objptr();
-    return(ObjectPtr<ObjectBase>(sbuf.objptr())); // this will one reference 
-}
-#endif
-
-
-
-#if 0
-ObjectPtr<ObjectBase> ObjectBase::makeShared(ObjectBase* forThis) {
-    if (forThis->cbPtr == NOT_SHARED()) {
-        ObjAllocatorArg allocArg(0);
-        std::shared_ptr<ObjectBaseHolder> sptr = std::allocate_shared<ObjectBaseHolder>(PooledCBlockAllocator<ObjectBaseHolder>(), forThis);
-        forThis->cbPtr = allocArg.allocatedAt;
-        ((void**)&sptr)[0] = (void*)forThis; // replace object with base object
-        return(ObjectPtr<ObjectBase>(*reinterpret_cast<std::shared_ptr<ObjectBase>*>((void*)&sptr)));
-    }
-    HackStdShared<ObjectBase> sbuf(forThis, forThis->cbPtr);
-    ObjectPtr<ObjectBase>& current = sbuf.objptr();
-    return(ObjectPtr<ObjectBase>(sbuf.objptr())); // this will one reference 
-}
-#endif
 
 RcString ObjectBase::toString() {
     return(RcString::format("Object@%p", (void*)this));
 }
-
-
-
 
 ARTD_END

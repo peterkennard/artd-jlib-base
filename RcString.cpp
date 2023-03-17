@@ -29,8 +29,8 @@ RcWString::RcWString(const RcString &str) : super(super::create(str)) {}
 
 
 template<class ChT>
-inline string_object<ChT>::string_object(int len, void *&cb)
-	: ObjectBase((CBlock*)cb), len_(len)
+inline string_object<ChT>::string_object(int len)
+	: len_(len)
 {
 #ifdef _DEBUG
 	chars_ = c_str(); //  chars();
@@ -47,8 +47,8 @@ class string_object<ChT>::Impl
 	: public string_object<ChT>
 {
 public:
-	Impl(int len, void *&cb)
-		: string_object<ChT>(len, cb)
+	Impl(int len)
+		: string_object<ChT>(len)
 	{}
 };
 
@@ -66,7 +66,7 @@ template<>
 RcString RcStrBaseT<RcString, char>::createForSize(int sLen) {
 
 	ObjAllocatorArg allocArg(ObjT::sizeForChars(sLen) - sizeof(ObjT));
-	std::shared_ptr<ObjT::Impl> sptr = std::allocate_shared<ObjT::Impl>(ObjectAllocator<ObjT::Impl>(), (int)sLen, allocArg.allocatedAt);
+	std::shared_ptr<ObjT::Impl> sptr = std::allocate_shared<ObjT::Impl>(ObjectAllocator<ObjT::Impl>(), (int)sLen);
 	return(*reinterpret_cast<RcString*>((void*)&sptr));
 }
 
@@ -117,7 +117,7 @@ template<>
 RcWString RcStrBaseT<RcWString, wchar_t>::createForSize(int sLen) {
 
 	ObjAllocatorArg allocArg(ObjT::sizeForChars(sLen) - sizeof(ObjT));
-	std::shared_ptr<ObjT::Impl> sptr = std::allocate_shared<ObjT::Impl>(ObjectAllocator<ObjT::Impl>(), (int)sLen, allocArg.allocatedAt);
+	std::shared_ptr<ObjT::Impl> sptr = std::allocate_shared<ObjT::Impl>(ObjectAllocator<ObjT::Impl>(), (int)sLen);
 	return(*reinterpret_cast<RcWString*>((void*)&sptr));
 }
 

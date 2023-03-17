@@ -40,7 +40,7 @@ class string_object
 protected:
     typedef string_object<ChT> ThisT;
 
-    ARTD_API_JLIB_BASE string_object(int len, void *&cb);
+    ARTD_API_JLIB_BASE string_object(int len);
 
 private:
 

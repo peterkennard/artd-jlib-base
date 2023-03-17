@@ -261,8 +261,9 @@ protected:
 	friend class RcWString;
 
 	class CBlock;
-
-	ObjectBase(CBlock* forThis);
+	// this assigns the cbPtr to where the "control block" for this object was allocated
+	// and will deal it "embeded" inherited objects in a containing class
+	ObjectBase() : cbPtr(_allocatorArg_ != nullptr ? _allocatorArg_->allocatedAt : NOT_SHARED) {}
 
 	virtual const ArtdClass* getClass() const {
 		return(nullptr);
@@ -322,25 +323,7 @@ private:
 		enum { value = sizeof(test<T>(0)) == sizeof(char) };
 	};
 
-	template <class ObjT>
-	static ObjectPtr<ObjT> makeFromBase(ObjT* obj, std::false_type) {
-		ObjectPtr<ObjectBase> hBase = makeHandle(obj);
-		return(hBase);  // uses static cast to get frombase to ObjT
-	}
-
-	template <class ObjT>
-	static ObjectPtr<ObjT> makeFromBase(ObjT* obj, std::true_type) {
-		ObjectBase* base = obj->myObjectBase(); // method returns base when ambiguous
-		ObjectPtr<ObjectBase> hBase = makeHandle(base);
-		HackStdShared<ObjT> hack(obj, base->cbPtr);
-		return(hack.objptr());
-	}
-
 public:
-
-	INL ObjectBase()
-		: ObjectBase((CBlock*)NOT_SHARED())
-	{}
 
 	static void setKeepAllocatedRefs(bool);  // keeps a map of all outstanding objects
 	static size_t getAllocatedCount(bool final=false);
@@ -361,21 +344,20 @@ public:
 	template <class ObjT, class... _Types>
 	static ObjectPtr<ObjT> make(_Types&&... args) {
 
+		// std::has_virtual_destructor<T>
+
 		if (std::is_base_of<ObjectBase, ObjT>::value) {
-            ObjAllocatorArg aaa;
-			void *objmem = ::operator new(sizeof(ObjT));
-			ObjT* obj =  new(objmem) ObjT(std::forward<_Types>(args)...);
-			ObjectPtr<ObjT> retval 
-				= makeFromBase<ObjT>(obj,
-						std::bool_constant<has_myObjectBase<ObjT>::value>());
+			ObjAllocatorArg aaa;
+			void* objmem = ::operator new(sizeof(ObjT));
+			ObjectPtr<ObjectBase> hBase = makeHandle(reinterpret_cast<ObjectBase *>(objmem));
+			ObjT* obj = new(objmem) ObjT(std::forward<_Types>(args)...);
 			DoPostCreate<ObjT>(obj);
-			return(retval);
+			return(*(reinterpret_cast<ObjectPtr<ObjT>*>(&hBase)));
 		}
 		else {
 			return(ObjectPtr<ObjT>());
 		}
 	}
-	
 	virtual RcString toString();
 };
 

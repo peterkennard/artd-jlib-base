@@ -46,7 +46,7 @@ private:
 
 protected:
 
-    ARTD_API_JLIB_BASE RcArrayBase(void *cbPtr, int len);
+    ARTD_API_JLIB_BASE RcArrayBase(int len);
     ARTD_API_JLIB_BASE virtual ~RcArrayBase() override;
 public:
 

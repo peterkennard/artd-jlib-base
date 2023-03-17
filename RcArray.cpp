@@ -31,8 +31,8 @@
 
 ARTD_BEGIN
 
-RcArrayBase::RcArrayBase(void * allocatedAt, int len)
-	: ObjectBase((ObjectBase::CBlock *)allocatedAt), len_(len)
+RcArrayBase::RcArrayBase(int len)
+	: len_(len)
 {
 }
 RcArrayBase::~RcArrayBase() {
@@ -56,63 +56,12 @@ RcArrayBase::allocate(int numElems, int elemsize)
 	std::shared_ptr<int> sptr = std::allocate_shared<int>(ObjectAllocator<int>());
 
 	void* me = sptr.get();
-	RcArrayBase* obj = ::new(me) RcArrayBase(allocArg.allocatedAt, numElems);
+	RcArrayBase* obj = ::new(me) RcArrayBase(numElems);
 
 	return(*reinterpret_cast<ObjectPtr<RcArrayBase>*>((void*)&sptr));
 }
 
 #if 0
-
-
-
-class RcArrayImpl
-	: public RcArrayOwnedObjectBase
-{
-public:
-
-	RcArrayImpl(int len, int elemsize, int refs)
-		: RcArrayOwnedObjectBase(len,refs)
-	{
-	}
-};
-
-// static RcArrayImpl refbase(1,1,__static_refcount_init);
-
-
-RcArrayOwnedObjectBase *
-RcArrayOwnedObjectBase::constructInstance(void *buf,int count, int elemsize,RefScope scope)
-{
-	memset(buf,0,sizeForElements(count,elemsize));
-	return(new(buf) RcArrayImpl(count,elemsize,__scope_init(scope)));
-}
-
-/*
-RcArrayOwnedObjectBase *
-RcArrayOwnedObjectBase::getStaticInstance(void *buf,int count, int elemsize)
-{
-	if( (*(ptrdiff_t *)buf) != (*(ptrdiff_t *)(void *)&refbase)) {
-		new(buf) RcArrayImpl(count,elemsize,__static_refcount_init);
-	}
-	return((RcArrayOwnedObjectBase *)buf);
-}
-*/
-
-bool
-RcArrayOwnedObjectBase::isAllocated()
-{
-	// TODO: a cheezy test in case somehow some allocated object gets > staticRefs0
-	// but you'd have to have a gig of references to it.
-	return(_unsafeGetRefCount_() < (__static_refcount_init / 4));
-}
-RcArrayOwnedObjectBase *
-RcArrayOwnedObjectBase::ensureAllocated(int elemsize)
-{
-	if(isAllocated()) {
-		return(this);
-	}
-	return(RcArrayOwnedObjectBase::allocate(len_,elemsize,data()));
-}
-
 
 int
 RcArrayOwnedObjectBase::equals(const RcArrayOwnedObjectBase *a, const RcArrayOwnedObjectBase *b)
