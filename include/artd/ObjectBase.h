@@ -263,7 +263,7 @@ protected:
 	class CBlock;
 	// this assigns the cbPtr to where the "control block" for this object was allocated
 	// and will deal it "embeded" inherited objects in a containing class
-	ObjectBase() : cbPtr(_allocatorArg_ != nullptr ? _allocatorArg_->allocatedAt : NOT_SHARED) {}
+	ObjectBase() : cbPtr(_allocatorArg_ != nullptr ? _allocatorArg_->allocatedAt : NOT_SHARED()) {}
 
 	virtual const ArtdClass* getClass() const {
 		return(nullptr);
