@@ -71,9 +71,9 @@ struct ObjectPtrType {};
 
 template<class ObjT_>
 class ObjectPtr
-	: protected ::std::shared_ptr<ObjT_>
+	// to prevent this from truely "being" a shared_ptr change this to : protected
+	: public ::std::shared_ptr<ObjT_>
 	, public ObjectPtrType
-
 {
 public:
 	typedef ObjT_ ObjT;
@@ -154,6 +154,14 @@ public:
 	}
 
 	INL const ObjT& operator*() const {
+		return(super::operator*());
+	}
+
+	INL operator ObjT&() {
+		return(super::operator*());
+	}
+
+	INL operator const ObjT&() const {
 		return(super::operator*());
 	}
 
@@ -341,11 +349,10 @@ public:
 
 	virtual ~ObjectBase();
 
+	// NOTE: this can make non ObjectBase objects and assign to ObjectPtr<xx> handles.
 	template <class ObjT, class... _Types>
 	static ObjectPtr<ObjT> make(_Types&&... args) {
 
-		// std::has_virtual_destructor<T>
-		  
 		if (std::is_base_of<ObjectBase, ObjT>::value) {
 			ObjAllocatorArg aaa;
 			void* objmem = ::operator new(sizeof(ObjT));
@@ -355,7 +362,9 @@ public:
 			return(*(reinterpret_cast<ObjectPtr<ObjT>*>(&hBase)));
 		}
 		else {
-			return(ObjectPtr<ObjT>());
+			// std::has_virtual_destructor<T> // TODO: mayube a special case for this ? to use handle pool ?
+			ObjAllocatorArg aaa;
+			return(std::make_shared<ObjT>(std::forward<_Types>(args)...));
 		}
 	}
 	virtual RcString toString();
