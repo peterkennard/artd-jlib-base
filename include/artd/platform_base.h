@@ -34,6 +34,11 @@
 	#define ARTD_SHARED_LIBRARY_IMPORT
 #endif
 
+// might be different with some compilers
+#if defined(DEBUG) || defined(_DEBUG)
+    #define ARTD_DEBUG 1
+#endif
+
 // macro to encourage the compiler to always inline a function
 // If used instead of the 'inline' keyword, the function will be inlined always, if
 // possible, even in unoptimized or debug builds.
