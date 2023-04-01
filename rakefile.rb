@@ -20,6 +20,7 @@ Rakish::CppProject.new(
         'RcArray.cpp',
         'RcString.cpp',
         'cstring_util.cpp',
+        'Uuid.cpp',
         'utf8util.cpp'
     );
 
