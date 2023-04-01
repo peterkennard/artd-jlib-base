@@ -11,8 +11,4 @@
 	#define ARTD_API_JLIB_BASE ARTD_SHARED_LIBRARY_IMPORT
 #endif
 
-// ARTD_AssertDialog is defined in Assert.cpp
-ARTD_API_JLIB_BASE void ARTD_AssertDialog(const char* msg, const char* file, int line);
-
-
 #endif // __artd_jlib_base_h

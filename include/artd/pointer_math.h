@@ -9,6 +9,9 @@
 
 ARTD_BEGIN
 
+
+#define ARTD_OFFSET_OF(typ,fieldName) offsetof(typ,fieldName)
+
 // ***** common pointer offset math *****
 
 // offset a pointer byte address wise

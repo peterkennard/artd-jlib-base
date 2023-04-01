@@ -56,6 +56,13 @@ public:
 	INL void* cbPtr() {
 		return(vp[1]);
 	}
+	INL const void* cbPtr() const {
+		return(vp[1]);
+	}
+	template<class spType>
+	INL static const void* cbPtr(const std::shared_ptr<spType>& sp) {
+		return(reinterpret_cast<const HackStdShared<spType>*>(&sp)->cbPtr());
+	}
 	INL void* obj() {
 		return(vp[0]);
 	}
@@ -65,6 +72,7 @@ public:
 	INL void setCb(void* cb) {
 		vp[1] = cb;
 	}
+
 };
 
 struct ObjectPtrType {};
@@ -96,17 +104,18 @@ private:
 		return(*this);
 	}
 	/** @brief move assignment from another*/
-//	INL ThisT& operator=(const super&& r) noexcept
-//	{
-//		super::operator=(::std::move(r));
-//		return(*this);
-//	}
-
+	INL ThisT& operator=(const super&& r) noexcept
+	{
+		super::operator=(::std::move(r));
+		return(*this);
+	}
 public:
 
 	INL HackStdShared<ObjT>& _stdHack_() {
 		return(*reinterpret_cast<HackStdShared<ObjT>*>(this));
 	}
+
+	template<class typeA>
 
 	::std::shared_ptr<ObjT>& _myShared_() {
 		ARTD_STATIC_ASSERT(sizeof(*this) == sizeof(std::shared_ptr<ObjectBase>));
@@ -123,14 +132,13 @@ public:
 
 	template<class OtherT>
 	INL ObjectPtr(ObjectPtr<OtherT>& other)
-		: std::shared_ptr<ObjT>(std::static_pointer_cast<ObjT, OtherT> (other._myShared_()))
+		: super(std::move(other)) 
 	{}
+
 	template<class OtherT>
 	INL ObjectPtr(ObjectPtr<OtherT>&& other)
-		: super(std::move(reinterpret_cast<super&>(other._myShared_())))
-	{
-		_stdHack_().setObj((void*)static_cast<ObjT*>((OtherT*)(_stdHack_().obj())));
-	}
+		: super(std::move(other))
+	{}
 
 	/** @brief assignment from null */
 	INL ThisT& operator=(::std::nullptr_t) {
@@ -277,6 +285,13 @@ protected:
 		return(nullptr);
 	}
 
+	template<class typeB>
+	INL bool sameOwner(const std::shared_ptr<typeB>& b) {
+		if (cbPtr != HackStdShared<typeB>::cbPtr(b) || cbPtr == NOT_SHARED()) {
+			return(false);
+		}
+		return(true);
+	}
 	/** create an ObjectPtr<OwnedT> that hold a reference to this object
 	 * so this will not be dereferenced until the Owning object is.
 	 * This can be used to deal with multiple inheritance.
@@ -289,7 +304,6 @@ protected:
 		HackStdShared<OwnedT> hack(owned, cbPtr);
 		return(hack.objptr());
 	}
-	
 	static ObjectPtr<ObjectBase> makeHandle(ObjectBase* forThis);
 
 private:
@@ -391,7 +405,7 @@ public:
 	{}
 
 	INL WeakPtr(ObjectPtr<ObjT>& from)
-		: super(from._myShared_())
+		: super(from)
 	{}
 
 	INL WeakPtr(std::nullptr_t)
