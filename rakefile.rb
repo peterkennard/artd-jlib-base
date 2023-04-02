@@ -15,7 +15,9 @@ Rakish::CppProject.new(
 	addPublicIncludes('include/artd/*.h');
 
     addSourceFiles(
+        'ArtdClassId.cpp',
         'Formatf.cpp',
+        'HexFormatter.cpp',
         'ObjectBase.cpp',
         'RcArray.cpp',
         'RcString.cpp',
