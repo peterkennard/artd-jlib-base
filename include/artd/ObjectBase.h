@@ -132,7 +132,7 @@ public:
 
 	template<class OtherT>
 	INL ObjectPtr(ObjectPtr<OtherT>& other)
-		: super(std::move(other)) 
+		: super(other) 
 	{}
 
 	template<class OtherT>
