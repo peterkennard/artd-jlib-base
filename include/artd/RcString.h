@@ -114,6 +114,7 @@ protected:
 public:
 
     static SubT createForSize(int charcount);
+//    static SubT createForSize(int charcount,const ChT *initialValue);
 
     static SubT vformat(const char* fmt, const FormatfArglist<>& args);
     static SubT vformat(const wchar_t* fmt, const FormatfArglist<>& args);
