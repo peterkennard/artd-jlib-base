@@ -18,6 +18,7 @@ Rakish::CppProject.new(
         'ArtdClassId.cpp',
         'Formatf.cpp',
         'HexFormatter.cpp',
+        'IntrusiveList.cpp',
         'ObjectBase.cpp',
         'RcArray.cpp',
         'RcString.cpp',
