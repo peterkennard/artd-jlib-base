@@ -4,10 +4,12 @@
 #include "artd/jlib_base.h"
 #include "artd/ObjectBase.h"
 
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) || defined(__APPLE__)
+    #define ARTD_HAS_STDBITS 1
     #include <bit>
     #include <bitset>
 #endif
+
 
 ARTD_BEGIN
 
@@ -81,6 +83,8 @@ protected:
 
 public:
 
+#ifdef ARTD_HAS_STDBITS
+    
     INL static int numberOfLeadingZeros(int64_t val) {
         return(std::countl_zero((uint64_t)val));
     }
@@ -120,6 +124,9 @@ public:
     INL static int numberOfLeadingOnes(int16_t val) {
         return(std::countl_one((uint16_t)val));
     }
+    
+#endif
+    
 };
 
 
