@@ -22,6 +22,7 @@ Rakish::CppProject.new(
         'ObjectBase.cpp',
         'RcArray.cpp',
         'RcString.cpp',
+        'base_types.cpp',
         'cstring_util.cpp',
         'Uuid.cpp',
         'utf8util.cpp'
