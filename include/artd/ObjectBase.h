@@ -389,12 +389,15 @@ struct WeakPointerType {};
 
 template<class ObjT_>
 class WeakPtr
-	: protected std::weak_ptr<ObjT_>
+	: public std::weak_ptr<ObjT_>
 	, public WeakPointerType
 {
 	typedef std::weak_ptr<ObjT_> super;
+	typedef std::weak_ptr<ObjT_> super;
 public:
 	typedef ObjT_ ObjT;
+
+	INL WeakPtr() {}
 
 	INL WeakPtr(const WeakPtr<ObjT>& from)
 		: super(from)
@@ -412,10 +415,15 @@ public:
 		: super()
 	{}
 
-	INL WeakPtr<ObjT> &operator=(std::nullptr_t)
+	INL WeakPtr<ObjT>& operator=(std::nullptr_t)
 	{
 		(*this).~WeakPtr<ObjT>();
 		new(this) super();
+		return(*this);
+	}
+	INL WeakPtr<ObjT>& operator=(WeakPtr<ObjT> &&from)
+	{
+		super::operator=(std::move(from));
 		return(*this);
 	}
 
