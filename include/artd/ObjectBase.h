@@ -94,21 +94,7 @@ private:
 	friend class WeakPtr<ObjT>;
 
 	ObjectPtr(ObjAllocatorArg& arg);
-	INL ObjectPtr(const super& from) : super(from) {}
-	INL ObjectPtr(const super&& from) noexcept : super(std::move(from)) {}
 
-	/** @brief assignment from another*/
-	INL ThisT& operator=(const super& r) noexcept
-	{
-		super::operator=(r);
-		return(*this);
-	}
-	/** @brief move assignment from another*/
-	INL ThisT& operator=(const super&& r) noexcept
-	{
-		super::operator=(::std::move(r));
-		return(*this);
-	}
 public:
 
 	INL HackStdShared<ObjT>& _stdHack_() {
@@ -122,6 +108,9 @@ public:
 		return(*reinterpret_cast<::std::shared_ptr<ObjT>*>(this));
 	}
 
+	INL explicit ObjectPtr(const super& from) : super(from) {}
+	INL explicit ObjectPtr(super&& from) noexcept : super(std::move(from)) {}
+
 	// the various standard constructors
 	INL ObjectPtr() : super() {}
 	INL ObjectPtr(nullptr_t) : super() {}
@@ -131,8 +120,8 @@ public:
 	{}
 
 	template<class OtherT>
-	INL ObjectPtr(ObjectPtr<OtherT>& other)
-		: super(other) 
+	INL ObjectPtr(const ObjectPtr<OtherT>& other)
+		: super(other)
 	{}
 
 	template<class OtherT>
@@ -140,9 +129,49 @@ public:
 		: super(std::move(other))
 	{}
 
+	template<class OtherT>
+	INL ObjectPtr(const std::shared_ptr<OtherT>& other)
+		: super(other)
+	{}
+
+	template<class OtherT>
+	INL ObjectPtr(std::shared_ptr<OtherT>&& other)
+		: super(std::move(other))
+	{}
+
 	/** @brief assignment from null */
 	INL ThisT& operator=(::std::nullptr_t) {
 		super::operator=(super());
+		return(*this);
+	}
+
+	/** @brief assignment from this type*/
+	INL ThisT& operator=(const ThisT& r)
+	{
+		super::operator=(static_cast<const super&>(r));
+		return(*this);
+	}
+
+	/** @brief move assignment from this type*/
+	INL ThisT& operator=(ThisT&& r) noexcept
+	{
+		super::operator=(::std::move(static_cast<const super&&>(r)));
+		return(*this);
+	}
+
+	/** @brief assignment from another type (casts) */
+	template<class OtherT>
+	INL ThisT& operator=(const std::shared_ptr<OtherT> &r)
+	{
+		super::operator=(r); //  static_cast<const super&>(r));
+		return(*this);
+	}
+
+	/** @brief move assignment from another type (casts) */
+	template<class OtherT>
+	INL ThisT& operator=(std::shared_ptr<OtherT> &&r) noexcept
+	{
+		super::operator=(std::move(r)); //  ::std::move(static_cast<const super&&>(r)));
 		return(*this);
 	}
 
@@ -171,20 +200,6 @@ public:
 
 	INL operator const ObjT&() const {
 		return(super::operator*());
-	}
-
-	/** @brief assignment from another*/
-	INL ThisT& operator=(const ThisT& r)
-	{
-		super::operator=(static_cast<const super&>(r));
-		return(*this);
-	}
-
-	/** @brief move assignment from another*/
-	INL ThisT& operator=(ThisT&& r) noexcept
-	{
-		super::operator=(::std::move(static_cast<const super&&>(r)));
-		return(*this);
 	}
 	
 	INL bool operator==(nullptr_t) const noexcept {
