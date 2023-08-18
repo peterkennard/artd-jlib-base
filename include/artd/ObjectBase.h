@@ -408,7 +408,6 @@ class WeakPtr
 	, public WeakPointerType
 {
 	typedef std::weak_ptr<ObjT_> super;
-	typedef std::weak_ptr<ObjT_> super;
 public:
 	typedef ObjT_ ObjT;
 
