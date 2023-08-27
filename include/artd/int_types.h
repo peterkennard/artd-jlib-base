@@ -70,7 +70,9 @@
 			#include <stdint.h>
 		#endif
 	#endif
-
+    #ifdef __APPLE__
+        #define ARTD_LONG_IS_64BIT 1
+    #endif
 	#ifdef __linux__
 		#include <stdint.h>
 		#include <stddef.h>  // ptrdiff_t size_t wchar_t 

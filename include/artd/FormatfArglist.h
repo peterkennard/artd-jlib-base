@@ -3,6 +3,7 @@
 
 #include "artd/ObjectBase.h"
 #include "artd/StringArg.h"
+#include "artd/int_types.h"
 
 #ifdef ARTD_SUPPORT_STD_STRING
     #include <string>

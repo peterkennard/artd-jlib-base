@@ -292,7 +292,7 @@ wchar_t *first;
 
 int itostr(int num,char *out,int radix)
 {
-	return(intToText((radix == 10) && (num < 0),(unsigned long)num,out, radix));
+	return(intToText((radix == 10) && (num < 0),(unsigned int)num,out, radix));
 }
 
 int ultostr(unsigned long num,char *out,int radix)
@@ -328,7 +328,7 @@ int ul64tostr(uint64_t num,char *out,int radix)
 
 int itostr(int num,wchar_t *out,int radix)
 {
-	return(intToText((radix == 10) && (num < 0),(unsigned long)num,out, radix));
+	return(intToText((radix == 10) && (num < 0),(unsigned int)num,out, radix));
 }
 
 int ultostr(unsigned long num,wchar_t *out,int radix)
