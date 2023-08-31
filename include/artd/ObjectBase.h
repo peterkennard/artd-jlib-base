@@ -276,7 +276,7 @@ class ARTD_API_JLIB_BASE ObjectBase
 	};
 
 	template <class T>
-	static INL void onObjectCreated_(T* obj, isAnObjectBase_<false>) {
+	static INL void onObjectCreated_(T* /*obj*/, isAnObjectBase_<false>) {
 	};
 
 	static uint8_t initValues[4];
@@ -338,7 +338,7 @@ private:
 	}
 
 	template<typename ObjT>
-	static void DoPostCreate(ObjT *obj, std::false_type) {
+	static void DoPostCreate(ObjT * /*obj*/, std::false_type) {
 	}
 	template<typename ObjT>
 	static void DoPostCreate(ObjT* obj)
@@ -465,23 +465,23 @@ public:
 	struct rebind { typedef ObjectAllocator<U> other; };
 
 	ObjectAllocator() throw() {}
-	ObjectAllocator(const ObjectAllocator& other) throw() {}
+	ObjectAllocator(const ObjectAllocator& /* other */) throw() {}
 
 	template<typename U>
-	ObjectAllocator(const ObjectAllocator<U>& other) throw() {
+	ObjectAllocator(const ObjectAllocator<U>& /* other */) throw() {
 	}
 	template<typename U>
-	ObjectAllocator& operator = (const ObjectAllocator<U>& other) {
+	ObjectAllocator& operator = (const ObjectAllocator<U>& /* other */) {
 		return *this;
 	}
-	ObjectAllocator<T>& operator = (const ObjectAllocator& other) { return *this; }
+	ObjectAllocator<T>& operator = (const ObjectAllocator& /* other */) { return *this; }
 	~ObjectAllocator() {}
 
 	pointer allocate(size_type n)
 	{
 		return(static_cast<T*>(ObjAllocatorArg::heapAllocate(n * sizeof(T))));
 	}
-	void deallocate(T* ptr, size_type n)
+	void deallocate(T* ptr, size_type /* n */)
 	{
 		ObjAllocatorArg::heapDeallocate(ptr);
 	}
