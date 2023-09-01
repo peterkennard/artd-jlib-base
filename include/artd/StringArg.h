@@ -83,7 +83,7 @@ public:
 		: s_(0), obj_(0), type_(C_STRING)
 	{}
 	
-	INL string_arg(const int &v)
+	INL string_arg(const int &)
 		: s_(0), obj_(0), type_(C_STRING)
 	{}
 	
