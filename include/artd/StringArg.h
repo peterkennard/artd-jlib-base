@@ -103,12 +103,14 @@ public:
 
 	string_arg(const RcString& rc);
 
+#ifdef _MSC_VER
 	INL const MyType &operator=(const MyType &s)
 	{
 		this->~MyType();
 		return(*new(this) MyType(s));
 	}
-
+#endif
+    
 	int lengthFromRc() const;
 
 public:

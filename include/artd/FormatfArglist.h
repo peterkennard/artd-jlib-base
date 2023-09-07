@@ -46,9 +46,11 @@ public:
     
     public:
 
-#pragma warning( push )
-#pragma warning( disable : 26495)
-
+#ifdef _MSC_VER
+    #pragma warning( push )
+    #pragma warning( disable : 26495)
+#endif
+        
         INL Arg() : type_(tNONE) {}
         // note we have both const and non const versions. MSC will not assign a non const * to a const * overload (!)
 		INL Arg(const char *v) : type_(tCHARS) { value_.chars_ = v; }
@@ -85,8 +87,11 @@ public:
             // null it out so doesn't destroy
             new(&obj) ObjectPtr<ObjectBase>();
         }
-#pragma warning( pop ) 
 
+#ifdef _MSC_VER
+    #pragma warning( pop )
+#endif
+        
     #ifdef ARTD_SUPPORT_STD_STRING
       #ifdef _MSC_VER
         INL Arg(const std::string &v) : type_(tCHARS) { value_.chars_ = v.c_str(); }
@@ -169,7 +174,7 @@ public:
      *		outputlog(fmt,arglist);
      *  }  
      */
-    INL static void addArgs(Arg *arglist) {
+    INL static void addArgs(Arg * /* arglist */) {
     }
 
     template <typename First, typename... Rest> 

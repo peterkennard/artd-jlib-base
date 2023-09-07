@@ -347,8 +347,10 @@ namespace std {
 // TODO: is it important for this to be in namespace std:: ??
 template<>
 struct hash<artd::RcString> {
-    size_t operator()(const artd::RcString& _Keyval) const noexcept {
+        size_t operator()(const artd::RcString& /*_Keyval*/) const noexcept {
+
 #ifdef _MSC_VER
+        size_t operator()(const artd::RcString& _Keyval) const noexcept {
         return std::_Hash_array_representation(_Keyval.c_str(), _Keyval.length());
 #endif
         return(0);
