@@ -41,7 +41,7 @@ ARTD_BEGIN
 template<class T> class ObjectPtr;
 class RcString;
 class RcWString;
-class FilePath;
+class JPath;
 
 template<class ChT> class string_object;
 
