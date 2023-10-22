@@ -24,7 +24,7 @@ ARTD_BEGIN
 // gives inclusive size between two fields in a structure
 #define INCLUSIVE_SIZE(f0,f1) ARTD_SIZE(&(f0),&(&(f1))[1])
 
-#define ARTD_ARRAY_SIZE(a) \
+#define ARTD_ARRAY_LENGTH(a) \
 	((sizeof(a) / sizeof(*(a))) / \
 	static_cast<size_t>(!(sizeof(a) % sizeof(*(a)))))
 
