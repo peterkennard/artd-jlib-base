@@ -41,15 +41,15 @@ ARTD_BEGIN
 class ARTD_API_JLIB_BASE RawDlNode
 {
 	/** @brief you can't copy these they are linked up! */
-	inline void operator=(const RawDlNode &n) {}
+	inline void operator=(const RawDlNode &) {}
 public:
-	inline RawDlNode(const RawDlNode &n) { next = prev = this; }
+	inline RawDlNode(const RawDlNode &) { next = prev = this; }
 	inline RawDlNode() { next = prev = this; }
 
 	RawDlNode *next;
 	RawDlNode *prev;
 
-	inline RawDlNode(bool dontInit) {}
+	inline RawDlNode(bool /*dontInit*/) {}
 	inline void init() { next = prev = this; }
 
 	// node is not attached to a list
@@ -103,7 +103,7 @@ class DlNode
 	: public RawDlNode
 {
 	/** @brief you can't copy these they are linked up! */
-	inline void operator=(const RawDlNode &n) {}
+	inline void operator=(const RawDlNode &) {}
 public:
 	inline DlNode(const RawDlNode &n) : RawDlNode(n) {}
 	inline DlNode() : RawDlNode() {}
@@ -209,7 +209,7 @@ public:
 	public:
 		iterator() {}
 //        iterator(iterator &it) : _Ptr(it._Ptr), _list(it._list) {}
-		iterator(_Link *pt, _Tt *l) : _Ptr(pt) {}
+		iterator(_Link *pt, _Tt * /*l*/) : _Ptr(pt) {}
 
 		iterator &operator ++()
 					{ _Ptr = _Ptr->next; return(*this); }
@@ -247,12 +247,12 @@ public:
 
 	IntrusiveList() {}
 	IntrusiveList(bool dontInit) : list_(dontInit) {}
-	IntrusiveList(const _Tt &l) {}
+	IntrusiveList(const _Tt &) {}
     ~IntrusiveList() { list_.init(); }
 
 	// overide for referencing/dereferencing/deleting etc
-	void onAttach(void *n) {}
-	void onDetach(void *n) {}
+	void onAttach(void *) {}
+	void onDetach(void *) {}
 
 	inline iterator begin() { return(iterator(list_.next,this)); }
 	inline iterator end()   { return(iterator(&list_,this)); }
@@ -489,9 +489,9 @@ public:
 
 	ShIntrusiveList() { list_ = 0; }
 
-	void onAttach(_Node *n) {}
-	void onDetach(_Node *n) {}
-	void onDelete(_Node *n) {}
+	void onAttach(_Node *) {}
+	void onDetach(_Node *) {}
+	void onDelete(_Node *) {}
 
 	inline void virginAddHead(_Node *node)
 	{
