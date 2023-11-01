@@ -215,7 +215,7 @@ void ObjectBase::addRef() {
     }
     HackStdShared<ObjectBase> buf(this, cbPtr);
     HackStdShared<ObjectBase> dbuf;
-    new(&dbuf) ObjectPtr<ObjectBase>(buf.objptr());
+    new(&dbuf) ObjectPtr<ObjectBase>(buf.objPtr());
 }
 
 void ObjectBase::release() {
@@ -228,8 +228,8 @@ void ObjectBase::release() {
     }
     // this shoudle be ok as if we have a this it hasn't been deleted yet
     HackStdShared<ObjectBase> buf(this, cbPtr);
-    if (buf.objptr().use_count() > 0) {
-        buf.objptr() = nullptr;
+    if (buf.objPtr().use_count() > 0) {
+        buf.objPtr() = nullptr;
     }
 }
 

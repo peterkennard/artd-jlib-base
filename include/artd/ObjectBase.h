@@ -7,6 +7,7 @@
 
 #include "artd/jlib_base.h"
 #include "artd/static_assert.h"
+#include <type_traits>
 #include <mutex>
 
 #define ARTD_OBJECT_DECL
@@ -32,16 +33,22 @@ class HackStdShared {
 public:
 	INL HackStdShared() {
 	}
-	INL HackStdShared(ObjT* obj, void* cb) {
+	INL HackStdShared(ObjT* obj,const void* cb) {
 		vp[0] = obj;
-		vp[1] = cb;
+        vp[1] = const_cast<void *>(cb);
 	}
 	INL HackStdShared(std::shared_ptr<ObjT>& sp) {
 		const void** po = &sp;
 		vp[0] = po[0];
 		vp[1] = po[1];
 	}
-	INL ObjectPtr<ObjT>& objptr() {
+	INL HackStdShared(HackStdShared<ObjT>&& sp) {
+		vp[0] = sp.vp[0];
+		vp[1] = sp.vp[1];
+		sp.vp[0] = nullptr;
+		sp.vp[1] = nullptr;
+	}
+	INL ObjectPtr<ObjT>& objPtr() {
 		return(*reinterpret_cast<ObjectPtr<ObjT>*>(&vp));
 	}
 	INL WeakPtr<ObjT>& weakptr() {
@@ -63,14 +70,14 @@ public:
 	INL static const void* cbPtr(const std::shared_ptr<spType>& sp) {
 		return(reinterpret_cast<const HackStdShared<spType>*>(&sp)->cbPtr());
 	}
-	INL void* obj() {
+	INL void* obj() const {
 		return(vp[0]);
 	}
 	INL void setObj(void* obj) {
 		vp[0] = obj;
 	}
-	INL void setCb(void* cb) {
-		vp[1] = cb;
+	INL void setCb(const void* cb) {
+        vp[1] = const_cast<void *>(cb);
 	}
 
 };
@@ -317,34 +324,61 @@ protected:
 			return(nullptr);
 		}
 		HackStdShared<OwnedT> hack(owned, cbPtr);
-		return(hack.objptr());
+		return(hack.objPtr());
 	}
 	static ObjectPtr<ObjectBase> makeHandle(ObjectBase* forThis);
 
 private:
 
-	template<typename T>
-	struct hasPostCreateMethod
-	{
-		template<typename U, void (U::*)() const> struct SFINAE {};
-		template<typename U> static char Test(SFINAE<U, &U::onObjectCreated>*);
-		template<typename U> static int Test(...);
-		static const bool value = sizeof(Test<T>(0)) == sizeof(char);
-	};
+// Old one for C++ 11 ?
+//	template<typename T>
+//	struct hasPostCreateMethod
+//	{
+//		template<typename U, void (U::*)() const> struct SFINAE {};
+//		template<typename U> static char Test(SFINAE<U, &U::onObjectCreated>*);
+//		template<typename U> static int Test(...);
+//		static const bool value = sizeof(Test<T>(0)) == sizeof(char);
+//	};
+
+
+    template<typename Class, typename Enabled = void>
+    struct hasPostCreateMethod_s
+    {
+        static constexpr bool value = false;
+    };
+
+    template<typename Class>
+    struct hasPostCreateMethod_s
+    <
+        Class,
+        std::enable_if_t
+        <
+            std::is_member_function_pointer_v<decltype(&Class::onObjectCreated)>
+        >
+    >
+    {
+        static constexpr bool value = std::is_member_function_pointer_v<decltype(&Class::onObjectCreated)>;
+    };
+
+    template<typename Class>
+    static constexpr bool hasPostCreateMethod()
+    {
+        return hasPostCreateMethod_s<Class>::value;
+    };
+private:
 
 	template<typename ObjT>
-	static void DoPostCreate(ObjT *obj, std::true_type)	{
+	static void doPostCreate_(ObjT *obj, std::true_type)	{
 		obj->onObjectCreated();
 	}
 
 	template<typename ObjT>
-	static void DoPostCreate(ObjT * /*obj*/, std::false_type) {
+	static void doPostCreate_(ObjT * /*obj*/, std::false_type) {
 	}
 	template<typename ObjT>
 	static void DoPostCreate(ObjT* obj)
 	{
-		DoPostCreate(obj,
-			std::integral_constant<bool, hasPostCreateMethod<ObjT>::value>());
+        doPostCreate_<ObjT>(obj, std::bool_constant<hasPostCreateMethod<ObjT>()>() );
 	}
 	
 	// SFINAE test
@@ -393,7 +427,9 @@ public:
 		else {
 			// std::has_virtual_destructor<T> // TODO: mayube a special case for this ? to use handle pool ?
 			ObjAllocatorArg aaa;
-			return(std::make_shared<ObjT>(std::forward<_Types>(args)...));
+            ObjectPtr<ObjT> hObj = std::make_shared<ObjT>(std::forward<_Types>(args)...);
+            DoPostCreate<ObjT>(hObj.get());
+            return(hObj);
 		}
 	}
 	virtual RcString toString();
