@@ -28,6 +28,8 @@
 #include "artd/ObjectBase.h"
 #include "artd/RcArray.h"
 #include "artd/FormatfArglist.h"
+#include <string_view>
+
 
 ARTD_BEGIN
 
@@ -71,7 +73,7 @@ public:
         const char* dis = (const char*)this; 
         return(dis ? (CharT*)((dis + offsetOfChars())) : 0); 
     }
-
+    
     /** @brief returns length of buffer in chars - not including terminal "nul" */
     INL int length() const { return(len_); }
 
@@ -174,6 +176,12 @@ public:
     }
     INL const ChT& operator[](int ix) const {
         return(super::get()->chars()[ix]);
+    }
+    INL operator std::basic_string_view<ChT> () {
+        return(std::basic_string_view<CharT>(c_str(),length()));
+    }
+    INL operator const std::basic_string_view<ChT> () const {
+        return(std::basic_string_view<CharT>(c_str(),length()));
     }
 };
 
@@ -341,25 +349,6 @@ inline bool RcString::Less::operator()(const string_arg<char> &a, const string_a
 
 ARTD_END
 
-namespace std {
-
-// Note: this is for windows - TODO: other std libraries ?
-// TODO: is it important for this to be in namespace std:: ??
-template<>
-struct hash<artd::RcString> {
-        size_t operator()(const artd::RcString& /*_Keyval*/) const noexcept {
-
-#ifdef _MSC_VER
-        size_t operator()(const artd::RcString& _Keyval) const noexcept {
-        return std::_Hash_array_representation(_Keyval.c_str(), _Keyval.length());
-#endif
-        return(0);
-    }
-};
-
-}
-
-
 
 ARTD_BEGIN
 
@@ -429,6 +418,20 @@ inline string_arg<char>::string_arg(const RcString& rc) : type_(RC_STRING) {
 }
 
 ARTD_END
+
+namespace std {
+
+template<>
+struct hash<artd::RcString> {
+    size_t operator()(const artd::RcString & keyVal) const
+    {
+        const std::basic_string_view<char> sView(keyVal);
+        return(std::hash<std::string_view>{}(sView));
+    }
+};
+        
+} // end std
+
 
 
 

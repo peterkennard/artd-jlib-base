@@ -30,6 +30,7 @@ namespace std {
 
 #else
 	#include <string>
+    #include <string_view>
 #endif
 
 #endif // ARTD_SUPPORT_STD_STRING
@@ -128,11 +129,12 @@ public:
 		if (s_ == NULL) {
 			return(0);
 		}
+        // TODO: use size_t ? 
 		if (sizeof(CharT) == sizeof(char)) {
-			return(::strlen((const char *)s_));
+			return((int)::strlen((const char *)s_));
 		}
 		else {
-			return(::wcslen((const wchar_t *)s_));
+			return((int)::wcslen((const wchar_t *)s_));
 		}
 	}
 
@@ -141,6 +143,11 @@ public:
 
 	INL operator const bool() const { return(s_ != nullptr); }
 
+    INL operator std::basic_string_view<CharT> () {
+        return(std::basic_string_view<CharT>(c_str(),length()));
+    }
+
+    
 #ifdef __GNUC__
 //	INL bool operator ==(const nullptr_t p) const { return(s_ == 0); }
 //	INL bool operator !=(const nullptr_t p) const { return(s_ != 0); }
@@ -149,7 +156,7 @@ public:
 //	INL operator void*() const { return(s_); }
 	INL bool operator !() const { return(s_ == 0); }
 //	INL operator bool() const { return(s_ != 0); }
-#else 
+#else
 	INL bool operator ==(const int &b) const { return(s_ == 0); }
 	INL bool operator !=(const int &b) const { return(s_ != 0); }
 #endif
