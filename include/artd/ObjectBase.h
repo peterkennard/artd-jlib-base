@@ -51,7 +51,7 @@ public:
 	INL ObjectPtr<ObjT>& objPtr() {
 		return(*reinterpret_cast<ObjectPtr<ObjT>*>(&vp));
 	}
-	INL WeakPtr<ObjT>& weakptr() {
+	INL WeakPtr<ObjT>& weakPtr() {
 		return(*reinterpret_cast<WeakPtr<ObjT>*>(&vp));
 	}
 	INL std::shared_ptr<ObjT>& stdptr() {
