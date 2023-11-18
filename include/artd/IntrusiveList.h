@@ -107,7 +107,7 @@ class DlNode
 public:
 	inline DlNode(const RawDlNode &n) : RawDlNode(n) {}
 	inline DlNode() : RawDlNode() {}
-	inline ~DlNode() { detach(); }
+	inline ~DlNode() { if(attached()) detach(); }
 };
 
 /** @brief place holder for internal templated list
@@ -128,37 +128,37 @@ class SimpleDlist;
 
 // a simple circular intrusive (nodes on objects) doubly linked list
 
-template<class BaseT, class SuperT>
+template<class BaseT, class SubT>
 constexpr size_t base_offset_test()
 {
     union {
         size_t i;
-        const SuperT *p;
+        const SubT *p;
     } pp;
 
     pp.i = 8;
 
-    const SuperT * const ps = pp.p; // reinterpret_cast<const SuperT*>((const void *)8);
+    const SubT * const ps = pp.p; // reinterpret_cast<const SubT*>((const void *)8);
     const BaseT * const pb = (const BaseT*)(ps);
 
-    return(((const char * const)pb) - ((const char * const)ps)); // return(((size_t)((reinterpret_cast<SuperT*>((void *)8)))-8));
+    return(((const char * const)pb) - ((const char * const)ps)); // return(((size_t)((reinterpret_cast<SubT*>((void *)8)))-8));
 }
 
 
 
-template<class _Nt = RawDlNode, class SuperT=SimpleDlist>
+template<class _Nt = RawDlNode, class SubT=SimpleDlist>
 class IntrusiveList
 {
 protected:
 
 	RawDlNode list_;
-//	typedef IntrusiveList<_Nt,nodeOffset,SuperT> _Tt;
-	typedef IntrusiveList<_Nt,SuperT> _Tt;
+//	typedef IntrusiveList<_Nt,nodeOffset,SubT> _Tt;
+	typedef IntrusiveList<_Nt,SubT> _Tt;
 	typedef _Nt       _Node;
 	typedef RawDlNode _Link;
 
 protected:
-	SuperT &tbase() { return(*(SuperT *)this); }
+	SubT &tbase() { return(*(SubT *)this); }
 
 	static _Link *toLink(_Node *n)
 	{
@@ -203,8 +203,8 @@ public:
 		_Link *_Ptr;
 		_Tt	  *_list;
 
-        //	friend class IntrusiveList<_Nt,nodeOffset,SuperT>;
-        friend class IntrusiveList<_Nt,SuperT>;
+        //	friend class IntrusiveList<_Nt,nodeOffset,SubT>;
+        friend class IntrusiveList<_Nt,SubT>;
 
 	public:
 		iterator() {}
@@ -246,9 +246,10 @@ public:
 	};
 
 	IntrusiveList() {}
-	IntrusiveList(bool dontInit) : list_(dontInit) {}
+    // TODO: do we ever want this ?
+	// IntrusiveList(bool dontInit) : list_(dontInit) {}
 	IntrusiveList(const _Tt &) {}
-    ~IntrusiveList() { list_.init(); }
+    ~IntrusiveList() { clear(); list_.init(); }
 
 	// overide for referencing/dereferencing/deleting etc
 	void onAttach(void *) {}
@@ -404,7 +405,7 @@ public:
 		for(node = list_.next; node != &list_; node = next)
 		{
 			next = node->next;
-			tbase().onDetach(detach_(node));
+			detach_(node);
 		}
 	}
 	typedef int forAllFunc(_Node &nd, void *data);
