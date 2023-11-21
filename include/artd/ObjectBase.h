@@ -118,6 +118,9 @@ public:
 	INL explicit ObjectPtr(const super& from) : super(from) {}
 	INL explicit ObjectPtr(super&& from) noexcept : super(std::move(from)) {}
 
+    template <typename... _Types>
+    static ObjectPtr<ObjT> make(_Types&&... args); // forward declaration - impl below
+        
 	// the various standard constructors
 	INL ObjectPtr() : super() {}
 	INL ObjectPtr(nullptr_t) : super() {}
@@ -326,7 +329,10 @@ protected:
 		HackStdShared<OwnedT> hack(owned, cbPtr);
 		return(hack.objPtr());
 	}
-	static ObjectPtr<ObjectBase> makeHandle(ObjectBase* forThis);
+public:
+    // TODO: would be nice to make protected or private but
+    // can't friend ObjectPtr<ObjT> ( for all ObjT ) to this method
+    static ObjectPtr<ObjectBase> _makeHandle_(ObjectBase* forThis);
 
 private:
 
@@ -375,12 +381,14 @@ private:
 	template<typename ObjT>
 	static void doPostCreate_(ObjT * /*obj*/, std::false_type) {
 	}
+    
+public:
 	template<typename ObjT>
 	static void DoPostCreate(ObjT* obj)
 	{
         doPostCreate_<ObjT>(obj, std::bool_constant<hasPostCreateMethod<ObjT>()>() );
 	}
-	
+private:
 	// SFINAE test
 	template <typename T>
 	class has_myObjectBase
@@ -419,7 +427,7 @@ public:
 		if (std::is_base_of<ObjectBase, ObjT>::value) {
 			ObjAllocatorArg aaa;
 			void* objmem = ::operator new(sizeof(ObjT));
-			ObjectPtr<ObjectBase> hBase = makeHandle(reinterpret_cast<ObjectBase *>(objmem));
+			ObjectPtr<ObjectBase> hBase = _makeHandle_(reinterpret_cast<ObjectBase *>(objmem));
 			ObjT* obj = new(objmem) ObjT(std::forward<_Types>(args)...);
 			DoPostCreate<ObjT>(obj);
 			return(*(reinterpret_cast<ObjectPtr<ObjT>*>(&hBase)));
@@ -435,6 +443,29 @@ public:
 	virtual RcString toString();
 };
 
+template<class ObjT>
+template<class... _Types>
+INL ObjectPtr<ObjT> ObjectPtr<ObjT>::make(_Types&&... args) {
+    return(ObjectBase::make<ObjT>(std::forward<_Types>(args)...));
+    
+    // TODO: for now we have redundancy until the ObjectBase version is removed
+    
+//    if (std::is_base_of<ObjectBase, ObjT>::value) {
+//        ObjAllocatorArg aaa;
+//        void* objmem = ::operator new(sizeof(ObjT));
+//        ObjectPtr<ObjectBase> hBase = ObjectBase::_makeHandle_(reinterpret_cast<ObjectBase *>(objmem));
+//        ObjT* obj = new(objmem) ObjT(std::forward<_Types>(args)...);
+//        ObjectBase::DoPostCreate<ObjT>(obj);
+//        return(*(reinterpret_cast<ObjectPtr<ObjT>*>(&hBase)));
+//    }
+//    else {
+//        // std::has_virtual_destructor<T> // TODO: mayube a special case for this ? to use handle pool ?
+//        ObjAllocatorArg aaa;
+//        ObjectPtr<ObjT> hObj = std::make_shared<ObjT>(std::forward<_Types>(args)...);
+//        ObjectBase::DoPostCreate<ObjT>(hObj.get());
+//        return(hObj);
+//    }
+}
 
 struct WeakPointerType {};
 

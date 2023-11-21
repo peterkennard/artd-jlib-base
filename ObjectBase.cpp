@@ -233,7 +233,7 @@ void ObjectBase::release() {
     }
 }
 
-ObjectPtr<ObjectBase> ObjectBase::makeHandle(ObjectBase* forThis) {
+ObjectPtr<ObjectBase> ObjectBase::_makeHandle_(ObjectBase* forThis) {
     
     ++allocCount;
     ObjAllocatorArg& allocArg = *_allocatorArg_;
