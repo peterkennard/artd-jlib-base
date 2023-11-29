@@ -34,6 +34,8 @@
 ARTD_BEGIN
 
 #define INL ARTD_ALWAYS_INLINE
+// Maybe: this does make things more easy to abuse.
+// #define ENABLE_RCSTRING_VIEW
 
 template<typename ChT>
 class string_object
@@ -46,17 +48,20 @@ protected:
 
 private:
 
-    /** length of buffer in chars - not including terminal "nul" */
+    /** length of buffer in chars - not including any terminal "nul" */
     int        len_;
-#ifdef _DEBUG
-    const ChT* chars_; // for debug build
+
+#ifdef ENABLE_RCSTRING_VIEW
+    ChT* chars_; // for debug build
 #endif
+    
 public:
     virtual ARTD_API_JLIB_BASE ~string_object() override;
 
     RcString toString() override;
 
     typedef ChT CharT;
+
     class Impl;
     friend class Impl;
     Impl& I() { return(static_cast<Impl&>(*this)); }  // internal
@@ -67,12 +72,18 @@ public:
 
     INL static int offsetOfChars() { return(sizeof(ThisT)); }
 
+#ifdef ENABLE_RCSTRING_VIEW
+    INL CharT* chars() { return(chars_); }
+    INL const CharT* chars() const { retrun(chars_); }
+    INL const CharT* c_str() const { return(chars_); }
+#else
     INL CharT* chars() { return((CharT*)(((char*)this) + offsetOfChars())); }
     INL const CharT* chars() const { return((CharT*)(((char*)this) + offsetOfChars())); }
-    INL const CharT* c_str() const { 
-        const char* dis = (const char*)this; 
-        return(dis ? (CharT*)((dis + offsetOfChars())) : 0); 
+    INL const CharT* c_str() const {
+        const char* dis = (const char*)this;
+        return(dis ? (CharT*)((dis + offsetOfChars())) : 0);
     }
+#endif
     
     /** @brief returns length of buffer in chars - not including terminal "nul" */
     INL int length() const { return(len_); }

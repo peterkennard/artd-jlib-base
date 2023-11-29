@@ -32,8 +32,9 @@ template<class ChT>
 inline string_object<ChT>::string_object(int len)
 	: len_(len)
 {
-#ifdef _DEBUG
-	chars_ = c_str(); //  chars();
+#ifdef ENABLE_RCSTRING_VIEW
+    const char* dis = (const char*)this;
+    chars_ = (dis ? (ChT*)((dis + offsetOfChars())) : 0);
 #endif
 }
 
