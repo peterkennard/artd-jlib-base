@@ -259,13 +259,8 @@ public:
         }
         return(false); 
     }
-
     bool equals(const string_arg<char> &b) const noexcept;
-    struct Less
-    {
-        bool operator()(const string_arg<char> &a, const string_arg<char> &b) const;
-    };
-
+ 
     bool operator()(const string_arg<char> &a, const string_arg<char> &b) const;
 };
 
@@ -341,14 +336,34 @@ ARTD_ALWAYS_INLINE std::ostream& operator<<(std::ostream& os, const artd::RcStri
     return(os);
 }
 
-ARTD_BEGIN
+namespace std {
 
-inline bool RcString::Less::operator()(const string_arg<char> &a, const string_arg<char> &b) const {
-    return(::strcmp(a.c_str(), b.c_str()) < 0);
-}
+template<>
+struct less<artd::RcString> {
+    
+    ARTD_ALWAYS_INLINE bool operator()(
+                                       const artd::RcString& a,
+                                       const artd::RcString& b) const
+    {
+        if(a.c_str() == b.c_str()) {
+            return(false);
+        }
+        return(::strcmp(a.c_str(), b.c_str()) < 0);
+    }
+};
 
-ARTD_END
+template<>
+struct hash<artd::RcString> {
+    size_t operator()(const artd::RcString & keyVal) const
+    {
+        const std::basic_string_view<char> sView(keyVal);
+        return(std::hash<std::string_view>{}(sView));
+    }
+};
 
+
+
+} // end stc
 
 ARTD_BEGIN
 
@@ -418,22 +433,6 @@ inline string_arg<char>::string_arg(const RcString& rc) : type_(RC_STRING) {
 }
 
 ARTD_END
-
-namespace std {
-
-template<>
-struct hash<artd::RcString> {
-    size_t operator()(const artd::RcString & keyVal) const
-    {
-        const std::basic_string_view<char> sView(keyVal);
-        return(std::hash<std::string_view>{}(sView));
-    }
-};
-        
-} // end std
-
-
-
 
 #endif // __artd_RcString_h
 
